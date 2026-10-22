@@ -1,0 +1,116 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                  String            @id @default(cuid())
+  spotifyId           String?           @unique
+  name                String?
+  email               String?           @unique
+  image               String?
+  city                String?           @default("New York")
+  latitude            Float?            @default(40.7128)
+  longitude           Float?            @default(-74.0060)
+  maxDistanceKm       Float?            @default(15)
+  preferredGenres     String?           @default("[]") // JSON string array
+  preferredCategories String?           @default("[]") // JSON string array
+  preferredDays       String?           @default("[\"friday\",\"saturday\",\"sunday\"]")
+  preferredTime       String?           @default("evening")
+  budget              Int?              @default(2500)
+  onboardingCompleted Boolean           @default(false)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  taste               UserTaste?
+  interactions        UserInteraction[]
+  savedEvents         SavedEvent[]
+  feedbacks           RecommendationFeedback[]
+}
+
+model UserTaste {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topGenres          String   @default("[]") // JSON string array of {genre, count, score}
+  topArtists         String   @default("[]") // JSON string array of artist objects
+  topTracks          String   @default("[]") // JSON string array of track objects
+  
+  // 10 Rich Musical DNA Dimensions
+  energy             Float    @default(50)
+  danceability       Float    @default(50)
+  valence            Float    @default(50)
+  acousticness       Float    @default(30)
+  intensity          Float    @default(60)
+  mainstream         Float    @default(50)
+  discovery          Float    @default(70)
+  indie              Float    @default(60)
+  electronic         Float    @default(40)
+  liveMusicAffinity  Float    @default(75)
+
+  persona            String   @default("Eclectic Explorer")
+  personaDescription String?  @default("Drawn to vibrant sounds and immersive live experiences across diverse genres.")
+  updatedAt          DateTime @updatedAt
+}
+
+model Event {
+  id           String            @id @default(cuid())
+  externalId   String?           @unique
+  title        String
+  description  String?
+  category     String            @default("concert") // concert, festival, club, dj, comedy, open_mic, poetry, arts
+  genre        String?
+  artists      String?           @default("[]") // JSON string array
+  venue        String?
+  city         String            @default("New York")
+  latitude     Float?
+  longitude    Float?
+  date         String
+  time         String?           @default("8:00 PM")
+  image        String?
+  ticketUrl    String?
+  price        Int?              @default(1500)
+  currency     String?           @default("₹")
+  source       String            @default("ticketmaster") // ticketmaster, local, partner
+  createdAt    DateTime          @default(now())
+
+  interactions UserInteraction[]
+  savedEvents  SavedEvent[]
+}
+
+model UserInteraction {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  type      String   // VIEW, LIKE, DISLIKE, SAVE, SHARE, TICKET_CLICK
+  reason    String?  // Optional for DISLIKE ("Too far", "Not my genre", "Too expensive", etc.)
+  createdAt DateTime @default(now())
+}
+
+model SavedEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId])
+}
+
+model RecommendationFeedback {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String
+  action    String   // like, not_interested
+  reason    String?
+  createdAt DateTime @default(now())
+}
