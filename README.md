@@ -1,7 +1,7 @@
 # 🎵 Resonate
 
 > **"Your music taste. Your city. Your next experience."**  
-> An AI-powered live-event discovery platform that bridges your digital Spotify taste to real-world concerts, club nights, music festivals, stand-up comedy, and open-mic showcases.
+> An AI-powered live-event discovery platform that bridges your digital Spotify taste to real-world concerts, club nights, music festivals, stand-up comedy, and open-mic shows.
 
 ---
 
